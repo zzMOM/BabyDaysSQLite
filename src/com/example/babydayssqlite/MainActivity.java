@@ -21,18 +21,18 @@ public class MainActivity extends Activity {
          * CRUD Operations
          * */
         
-		dbHelper.addFeedMilk(new Milk("01-10-2014", "7:00am", 4));
-		dbHelper.addFeedMilk(new Milk("01-10-2014", "10:00am", 4));
-		dbHelper.addFeedMilk(new Milk("01-10-2014", "12:00pm", 6));
+		dbHelper.addBabyActivity(new BabyActivity("01-10-2014", "7:00am", "FeedMilk",  "4"));
+		dbHelper.addBabyActivity(new BabyActivity("01-10-2014", "10:00am", "FeedMilk", "4"));
+		dbHelper.addBabyActivity(new BabyActivity("01-10-2014", "12:00pm", "FeedMilk", "6"));
         
         // get all books
-        List<Milk> list = dbHelper.getAllFeedMilk();
+        List<BabyActivity> list = dbHelper.getAllBabyActivity();
         
         // delete one book
-        dbHelper.deleteFeedMilk(list.get(0));
+        dbHelper.deleteBabyActivity(list.get(0));
         
         // get all books
-        dbHelper.getAllFeedMilk();
+        dbHelper.getAllBabyActivity();
 	}
 
 	@Override

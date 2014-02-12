@@ -21,25 +21,15 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
     private static final String DATABASE_NAME = "RoutineDB";
     
     // Table Names
-    private static final String TABLE_FEED_MILK = "feed_milk";
-    private static final String TABLE_DIAPER = "diaper";
-    private static final String TABLE_SLEEP = "sleep";
-    private static final String TABLE_MILESTONE = "milestone";
-    private static final String TABLE_DIARY = "diary";
+    private static final String TABLE_BABY_ACTIVITIES = "baby_activities";
     
-    // feed_milk Table Columns names
-    private static final String KEY_MILK_ID = "id";
-    private static final String KEY_MILK_DATE = "date";
-    private static final String KEY_MILK_TIME = "time";
-    private static final String KEY_MILK_OZ = "oz";
-    private static final String[] MILK_COLUMNS = {KEY_MILK_ID,KEY_MILK_DATE,KEY_MILK_TIME,KEY_MILK_OZ};
-    
- // diaper Table Columns names
-    private static final String KEY_DIAPER_ID = "id";
-    private static final String KEY_DIAPER_DATE = "date";
-    private static final String KEY_DIAPER_TIME = "time";
-    private static final String KEY_DIAPER_TYPE = "type";
-    private static final String[] DIAPER_COLUMNS = {KEY_DIAPER_ID,KEY_DIAPER_DATE,KEY_DIAPER_TIME,KEY_DIAPER_TYPE};
+    // baby_activities Table Columns names
+    private static final String KEY_ID = "id";
+    private static final String KEY_DATE = "date";
+    private static final String KEY_TIME = "time";
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_INFO = "info";
+    private static final String[] COLUMNS = {KEY_ID,KEY_DATE,KEY_TIME,KEY_TYPE,KEY_INFO};
     
  
     public MySQLiteHelper(Context context) {
@@ -48,21 +38,29 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
  
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // SQL statement to create feed_milk table
-        String CREATE_FEED_MILK_TABLE = "CREATE TABLE feed_milk ( " +
+        // SQL statement to create baby_activities table
+    	String CREATE_TABLE_BABY_ACTIVITIES = "CREATE TABLE " + TABLE_BABY_ACTIVITIES + "(" 
+    						+ KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," 
+    						+ KEY_DATE + " TEXT," 
+    						+ KEY_TIME + " TEXT," 
+    						+ KEY_TYPE + " TEXT,"
+    						+ KEY_INFO + " TEXT )";
+    	
+    	/*String CREATE_TABLE_BABY_ACTIVITIES = "CREATE TABLE baby_activities ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
                 "date TEXT, "+
                 "time TEXT, "+
-                "oz   INTEGER )";
+                "type TEXT, "+
+                "info   TEXT )";*/
  
-        // create feed_milk table
-        db.execSQL(CREATE_FEED_MILK_TABLE);
+        // create baby_activities table
+        db.execSQL(CREATE_TABLE_BABY_ACTIVITIES);
     }
  
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older feed_milk table if existed
-        db.execSQL("DROP TABLE IF EXISTS feed_milk");
+        // Drop older baby_activities table if existed
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BABY_ACTIVITIES);
  
         // create fresh books table
         this.onCreate(db);
@@ -73,20 +71,21 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
      * CRUD operations (create "add", read "get", update, delete)  + get all  + delete all 
      */
  
-    public void addFeedMilk(Milk milk){
-        Log.d("addBook", milk.toString());
+    public void addBabyActivity(BabyActivity babyActivity){
+        Log.d("addBook", babyActivity.toString());
         // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
  
         // 2. create ContentValues to add key "column"/value
         ContentValues values = new ContentValues();
-        values.put(KEY_MILK_DATE, milk.getDate()); // get date 
-        values.put(KEY_MILK_TIME, milk.getTime()); // get time
-        values.put(KEY_MILK_OZ, milk.getOZ()); //get oz
+        values.put(KEY_DATE, babyActivity.getDate()); // get date 
+        values.put(KEY_TIME, babyActivity.getTime()); // get time
+        values.put(KEY_TYPE, babyActivity.getType()); // get type
+        values.put(KEY_INFO, babyActivity.getInfo()); // get info
         
  
         // 3. insert
-        db.insert(TABLE_FEED_MILK, // table
+        db.insert(TABLE_BABY_ACTIVITIES, // table
                 null, //nullColumnHack
                 values); // key/value -> keys = column names/ values = column values
  
@@ -94,15 +93,15 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
         db.close(); 
     }
  
-    public Milk getFeedMilk(int id){
+    public BabyActivity getBabyActivity(int id){
  
         // 1. get reference to readable DB
         SQLiteDatabase db = this.getReadableDatabase();
  
         // 2. build query
         Cursor cursor = 
-                db.query(TABLE_FEED_MILK, // a. table
-                MILK_COLUMNS, // b. column names
+                db.query(TABLE_BABY_ACTIVITIES, // a. table
+                COLUMNS, // b. column names
                 " id = ?", // c. selections 
                 new String[] { String.valueOf(id) }, // d. selections args
                 null, // e. group by
@@ -114,68 +113,71 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
         if (cursor != null)
             cursor.moveToFirst();
  
-        // 4. build milk object
-        Milk milk = new Milk();
-        milk.setId(Integer.parseInt(cursor.getString(0)));
-        milk.setDate(cursor.getString(1));
-        milk.setTime(cursor.getString(2));
-        milk.setOZ(cursor.getInt(3));
+        // 4. build babyactivity object
+        BabyActivity babyActivity = new BabyActivity();
+        babyActivity.setId(Integer.parseInt(cursor.getString(0)));
+        babyActivity.setDate(cursor.getString(1));
+        babyActivity.setTime(cursor.getString(2));
+        babyActivity.setType(cursor.getString(3));
+        babyActivity.setInfo(cursor.getString(4));
  
-        Log.d("getFeedMilk("+id+")", milk.toString());
+        Log.d("getBabyActivity("+id+")", babyActivity.toString());
  
-        // 5. return milk
-        return milk;
+        // 5. return babyActivity
+        return babyActivity;
     }
  
     // Get All Books
-    public List<Milk> getAllFeedMilk() {
-        List<Milk> feed_milk = new LinkedList<Milk>();
+    public List<BabyActivity> getAllBabyActivity() {
+        List<BabyActivity> babyActivityList = new LinkedList<BabyActivity>();
  
         // 1. build the query
-        String query = "SELECT  * FROM " + TABLE_FEED_MILK;
+        String query = "SELECT  * FROM " + TABLE_BABY_ACTIVITIES;
  
         // 2. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);
  
-        // 3. go over each row, build milk and add it to list
-        Milk milk = null;
+        // 3. go over each row, build babyActivity and add it to list
+        BabyActivity babyActivity = null;
         if (cursor.moveToFirst()) {
             do {
-            	milk = new Milk();
-            	milk.setId(Integer.parseInt(cursor.getString(0)));
-                milk.setDate(cursor.getString(1));
-                milk.setTime(cursor.getString(2));
-                milk.setOZ(cursor.getInt(3));
+            	babyActivity = new BabyActivity();
+            	babyActivity.setId(Integer.parseInt(cursor.getString(0)));
+            	babyActivity.setDate(cursor.getString(1));
+            	babyActivity.setTime(cursor.getString(2));
+            	babyActivity.setType(cursor.getString(3));
+            	babyActivity.setInfo(cursor.getString(4));
  
-                // Add book to books
-                feed_milk.add(milk);
+                // Add babyActivity to babyActivities 
+            	babyActivityList.add(babyActivity);
             } while (cursor.moveToNext());
         }
  
-        Log.d("getAllFeedMilkActivities()", feed_milk.toString());
+        Log.d("getAllBabyActivity()", babyActivityList.toString());
  
         // return books
-        return feed_milk;
+        return babyActivityList;
     }
  
-     // Updating single milk
-    public int updateFeedMilk(Milk milk) {
+     // Updating single babyActivity
+    public int updateBabyActivity(BabyActivity babyActivity) {
  
         // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
  
         // 2. create ContentValues to add key "column"/value
         ContentValues values = new ContentValues();
-        values.put(KEY_MILK_DATE, milk.getDate()); // get date 
-        values.put(KEY_MILK_TIME, milk.getTime()); // get time
-        values.put(KEY_MILK_OZ, milk.getOZ()); //get oz
+        values.put(KEY_DATE, babyActivity.getDate()); // get date 
+        values.put(KEY_TIME, babyActivity.getTime()); // get time
+        values.put(KEY_TYPE, babyActivity.getType()); // get type
+        values.put(KEY_INFO, babyActivity.getInfo()); // get info
  
         // 3. updating row
-        int i = db.update(TABLE_FEED_MILK, //table
+        int i = db.update(TABLE_BABY_ACTIVITIES, //table
                 values, // column/value
-                KEY_MILK_ID+" = ?", // selections
-                new String[] { String.valueOf(milk.getId()) }); //selection args
+                KEY_ID+" = ?", // selections
+                new String[] { String.valueOf(babyActivity.getId()) }); //selection args
  
         // 4. close
         db.close();
@@ -185,20 +187,20 @@ public class MySQLiteHelper extends SQLiteOpenHelper{
     }
  
     // Deleting single book
-    public void deleteFeedMilk(Milk milk) {
+    public void deleteBabyActivity(BabyActivity babyActivity) {
  
         // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
  
         // 2. delete
-        db.delete(TABLE_FEED_MILK,
-                KEY_MILK_ID+" = ?",
-                new String[] { String.valueOf(milk.getId()) });
+        db.delete(TABLE_BABY_ACTIVITIES,
+                KEY_ID+" = ?",
+                new String[] { String.valueOf(babyActivity.getId()) });
  
         // 3. close
         db.close();
  
-        Log.d("deleteMilk", milk.toString());
+        Log.d("deleteBabyActivity", babyActivity.toString());
  
     }
 }
